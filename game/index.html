@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SUNBURN SYNDICATE — Bahía Coral</title>
+<link rel="stylesheet" href="./style.css">
+<script type="importmap">
+{"imports": {"three": "./vendor/three.module.min.js"}}
+</script>
+</head>
+<body>
+<div id="app">
+  <canvas id="game-canvas"></canvas>
+  <div id="vignette"></div>
+
+  <!-- ======================= HUD ======================= -->
+  <div id="hud" class="hidden">
+    <!-- top-left: mission card -->
+    <div id="mission-card" class="panel">
+      <div id="mission-header"><span id="mission-title">NO ACTIVE JOB</span><span id="mission-timer"></span></div>
+      <div id="mission-objective">Find a gold job beacon to start work.</div>
+      <div id="mission-meta"><span id="mission-distance"></span><span id="mission-stage-label"></span></div>
+      <div id="mission-bar"><div id="mission-bar-fill"></div></div>
+    </div>
+
+    <!-- top-right: status -->
+    <div id="status-panel" class="panel">
+      <div id="wanted-stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+      <div id="money">$0</div>
+      <div id="respect-row"><span id="respect-rank">UNKNOWN</span><div id="respect-bar"><div id="respect-fill"></div></div></div>
+      <div class="meter-row"><span class="meter-label">HP</span><div class="meter"><div id="health-fill"></div></div></div>
+      <div class="meter-row"><span class="meter-label">AR</span><div class="meter"><div id="armour-fill"></div></div></div>
+    </div>
+
+    <!-- BCPD response panel -->
+    <div id="bcpd-panel" class="panel hidden">
+      <div id="bcpd-header">BCPD RESPONSE</div>
+      <div id="bcpd-units"></div>
+    </div>
+
+    <!-- top-centre event banner -->
+    <div id="banner" class="hidden"></div>
+
+    <!-- bottom-left: minimap -->
+    <div id="minimap-wrap">
+      <canvas id="minimap" width="168" height="168"></canvas>
+      <div id="district-pill">PASEO FLAMENCO</div>
+    </div>
+
+    <!-- bottom-centre: dialogue -->
+    <div id="dialogue" class="panel hidden">
+      <canvas id="dialogue-portrait" width="112" height="112"></canvas>
+      <div id="dialogue-body"><div id="dialogue-name">TEO</div><div id="dialogue-text"></div></div>
+    </div>
+
+    <!-- bottom-right: driving cluster -->
+    <div id="drive-cluster" class="panel hidden">
+      <div id="radio-widget">
+        <div id="radio-station">98.5 CORAL FM</div>
+        <div id="radio-track">Neon Palms — Costa Azul</div>
+        <div id="radio-eq"><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div id="speedo"><span id="speed-value">0</span><span id="speed-unit">KM/H</span></div>
+      <div id="car-name">SOLARA GT</div>
+      <div class="meter-row"><span class="meter-label">BODY</span><div class="meter"><div id="chassis-fill"></div></div></div>
+    </div>
+
+    <!-- bottom-right: on-foot weapon cluster -->
+    <div id="weapon-cluster" class="panel hidden">
+      <div class="weapon-slot" data-slot="1"><b>1</b><span class="wname">PISTOL</span><span class="wammo">12 / ∞</span></div>
+      <div class="weapon-slot" data-slot="2"><b>2</b><span class="wname">SMG</span><span class="wammo">30 / 120</span></div>
+      <div class="weapon-slot" data-slot="3"><b>3</b><span class="wname">CARBINE</span><span class="wammo">30 / 90</span></div>
+      <div class="weapon-slot" data-slot="4"><b>4</b><span class="wname">SHOTGUN</span><span class="wammo">6 / 24</span></div>
+    </div>
+
+    <div id="crosshair" class="hidden"></div>
+    <div id="prompt" class="hidden"></div>
+    <div id="hitmarker" class="hidden">✕</div>
+  </div>
+
+  <!-- ======================= START SCREEN ======================= -->
+  <div id="start-screen">
+    <div id="start-top">
+      <div id="game-logo">SUNBURN <span>SYNDICATE</span></div>
+      <div id="game-tagline">BAHÍA CORAL · ONE WEEK · EIGHT JOBS</div>
+    </div>
+    <div id="start-menu">
+      <button id="btn-continue" class="menu-btn">CONTINUE</button>
+      <button id="btn-new" class="menu-btn gold">NEW GAME</button>
+      <button id="btn-load" class="menu-btn">LOAD</button>
+      <button id="btn-settings" class="menu-btn">SETTINGS</button>
+      <div id="load-slots" class="hidden"></div>
+      <div id="settings-box" class="hidden">
+        <label>Master volume <input id="opt-volume" type="range" min="0" max="100" value="80"></label>
+        <label>Mouse sensitivity <input id="opt-sens" type="range" min="20" max="200" value="100"></label>
+        <label><input id="opt-invert" type="checkbox"> Invert look Y</label>
+      </div>
+      <div id="start-controls">WASD move · mouse look · click shoot · E enter car · 1–4 weapons · SHIFT sprint · SPACE handbrake · ESC pause · L lighting · M mute</div>
+    </div>
+  </div>
+
+  <!-- ======================= PAUSE MENU ======================= -->
+  <div id="pause-menu" class="hidden">
+    <div id="pause-panel" class="panel">
+      <div id="pause-title">PAUSED — SUNBURN SYNDICATE</div>
+      <div id="pause-tabs">
+        <button data-tab="map" class="tab-btn active">MAP</button>
+        <button data-tab="stats" class="tab-btn">STATS</button>
+        <button data-tab="save" class="tab-btn">SAVE</button>
+        <button id="btn-resume" class="tab-btn resume">RESUME</button>
+      </div>
+      <div id="tab-map" class="tab-page">
+        <canvas id="big-map" width="760" height="470"></canvas>
+        <div id="map-hint">Click the map to set a waypoint — the gold route on your minimap will follow it.</div>
+      </div>
+      <div id="tab-stats" class="tab-page hidden"></div>
+      <div id="tab-save" class="tab-page hidden"></div>
+    </div>
+  </div>
+
+  <!-- ======================= GARAGE ======================= -->
+  <div id="garage-panel" class="panel hidden">
+    <div id="garage-header">TALLER DIABLO — SPRAY &amp; TUNE</div>
+    <div id="garage-car">SOLARA GT</div>
+    <button id="garage-repair" class="garage-btn">REPAIR <span>$450</span></button>
+    <div id="garage-respray-label">RESPRAY — LOSES UNSEEN HEAT</div>
+    <div id="garage-swatches"></div>
+    <button id="garage-engine" class="garage-btn">ENGINE TUNE <span>$3,500</span></button>
+    <button id="garage-armour" class="garage-btn">CHASSIS ARMOUR <span>$4,200</span></button>
+    <div id="garage-stats"></div>
+    <div id="garage-msg"></div>
+    <button id="garage-close" class="garage-btn close">LEAVE (ESC)</button>
+  </div>
+
+  <!-- ======================= JOB COMPLETE ======================= -->
+  <div id="job-complete" class="hidden">
+    <div id="job-complete-title">JOB COMPLETE</div>
+    <div id="job-complete-name">HOTWIRE SUNRISE</div>
+    <div id="job-complete-reward">+$4,500 · +150 RESPECT</div>
+    <div id="job-complete-rank"></div>
+  </div>
+
+  <div id="fade-black"></div>
+</div>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
