@@ -829,19 +829,26 @@ function buildGarage(G) {
   }
   const lampBall = new THREE.Mesh(
     new THREE.SphereGeometry(0.28, 10, 8),
-    new THREE.MeshStandardMaterial({ color: '#443a20', emissive: '#ffc98a', emissiveIntensity: 2.4 }),
+    new THREE.MeshStandardMaterial({ color: '#443a20', emissive: '#ffc98a', emissiveIntensity: 3.4 }),
   );
   lampBall.position.set(-332, 5.6, 195);
   grp.add(lampBall);
-  const workLight = new THREE.PointLight('#ffc98a', 420, 60, 1.8);
+  const workLight = new THREE.PointLight('#ffc98a', 980, 70, 1.8);
   workLight.position.set(-332, 5.4, 195);
   grp.add(workLight);
-  const neonGlow = new THREE.PointLight('#22d3ee', 260, 34, 1.7);
+  const neonGlow = new THREE.PointLight('#22d3ee', 340, 38, 1.7);
   neonGlow.position.set(-304, 4.4, 195);
   grp.add(neonGlow);
-  const fillLight = new THREE.PointLight('#ffd9a8', 260, 40, 1.7);
+  const fillLight = new THREE.PointLight('#ffd9a8', 620, 48, 1.7);
   fillLight.position.set(-312, 2.6, 186);
   grp.add(fillLight);
+  // Overhead spot aimed straight down the lift so the car on the platform
+  // sits in a warm pool of light instead of the night preset's gloom.
+  const liftSpot = new THREE.SpotLight('#ffbe78', 2600, 26, 0.62, 0.55, 1.5);
+  liftSpot.position.set(-332, 6.1, 195);
+  liftSpot.target.position.set(-332, 0.4, 195);
+  grp.add(liftSpot);
+  grp.add(liftSpot.target);
 
   G.scene.add(grp);
   G.garage = {
