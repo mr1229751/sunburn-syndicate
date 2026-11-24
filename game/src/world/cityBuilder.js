@@ -842,9 +842,8 @@ function buildGarage(G) {
   const fillLight = new THREE.PointLight('#ffd9a8', 620, 48, 1.7);
   fillLight.position.set(-312, 2.6, 186);
   grp.add(fillLight);
-  // Overhead spot aimed straight down the lift so the car on the platform
-  // sits in a warm pool of light instead of the night preset's gloom.
-  const liftSpot = new THREE.SpotLight('#ffbe78', 2600, 26, 0.62, 0.55, 1.5);
+  // Warm overhead spot pools light on the car sitting on the lift platform.
+  const liftSpot = new THREE.SpotLight('#ffbe78', 2600, 0, 0.62, 0.55, 1.6);
   liftSpot.position.set(-332, 6.1, 195);
   liftSpot.target.position.set(-332, 0.4, 195);
   grp.add(liftSpot);
